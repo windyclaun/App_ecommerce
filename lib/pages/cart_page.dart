@@ -88,69 +88,68 @@ class CartPageState extends State<CartPage> {
   }
 
   Future<void> _checkout() async {
-  try {
-    final selectedIds = selectedOrderIds.toList();
-    final List<String> productNames = items
-        .where((item) => selectedIds.contains(item.id))
-        .map((item) => item.productName)
-        .toList();
-  
-    if (selectedIds.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Please select items to checkout'),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 2)),
-      );
-      return;
-    }
+    try {
+      final selectedIds = selectedOrderIds.toList();
+      final List<String> productNames = items
+          .where((item) => selectedIds.contains(item.id))
+          .map((item) => item.productName)
+          .toList();
 
-    // Cek apakah stok cukup untuk setiap item yang dipilih
-    for (int id in selectedIds) {
-      final item = items.firstWhere((element) => element.id == id);
-      final product = await ProductService.getProductById(item.productId);
+      if (selectedIds.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Please select items to checkout'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 2)),
+        );
+        return;
+      }
 
-      // Jika jumlah item yang ingin di-checkout lebih besar dari stok
-      if (item.quantity > product.stock) {
+      // Cek apakah stok cukup untuk setiap item yang dipilih
+      for (int id in selectedIds) {
+        final item = items.firstWhere((element) => element.id == id);
+        final product = await ProductService.getProductById(item.productId);
+
+        // Jika jumlah item yang ingin di-checkout lebih besar dari stok
+        if (item.quantity > product.stock) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text('Insufficient stock for ${item.productName}'),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 2)),
+          );
+          return; // Hentikan checkout jika ada produk dengan stok kurang
+        }
+      }
+
+      // Jika semua produk memiliki stok cukup, lanjutkan checkout
+      await CartService.checkoutOrders(selectedIds, widget.token!);
+      await loadCart();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Checkout successful!'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2)),
+        );
+
+        // Tampilkan notifikasi lokal setelah checkout berhasil
+        NotificationService.showCheckoutSuccessNotification(productNames);
+
+        widget.onCheckoutDone?.call();
+      }
+    } catch (e) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text('Insufficient stock for ${item.productName}'),
+              content: Text(e.toString()),
               backgroundColor: Colors.red,
               duration: const Duration(seconds: 2)),
         );
-        return; // Hentikan checkout jika ada produk dengan stok kurang
       }
     }
-
-    // Jika semua produk memiliki stok cukup, lanjutkan checkout
-    await CartService.checkoutOrders(selectedIds, widget.token!);
-    await loadCart();
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Checkout successful!'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 2)),
-      );
-
-      // Tampilkan notifikasi lokal setelah checkout berhasil
-      NotificationService.showCheckoutSuccessNotification(productNames);
-
-      widget.onCheckoutDone?.call();
-    }
-  } catch (e) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 2)),
-      );
-    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -184,13 +183,13 @@ class CartPageState extends State<CartPage> {
                   ),
                 )
               : RefreshIndicator(
-                onRefresh: loadCart,
-                child: ListView.builder(
+                  onRefresh: loadCart,
+                  child: ListView.builder(
                     itemCount: items.length,
                     itemBuilder: (context, index) {
                       final item = items[index];
                       final isSelected = selectedOrderIds.contains(item.id);
-                
+
                       return Card(
                         margin: const EdgeInsets.all(8),
                         child: Padding(
@@ -248,7 +247,8 @@ class CartPageState extends State<CartPage> {
                                             ConnectionState.waiting) {
                                           return const CircularProgressIndicator();
                                         } else if (snapshot.hasError) {
-                                          return Text("Error: ${snapshot.error}");
+                                          return Text(
+                                              "Error: ${snapshot.error}");
                                         } else if (snapshot.hasData) {
                                           final product = snapshot.data!;
                                           return Text(
@@ -283,7 +283,8 @@ class CartPageState extends State<CartPage> {
                                 ],
                               ),
                               IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
+                                icon:
+                                    const Icon(Icons.delete, color: Colors.red),
                                 onPressed: () async {
                                   await CartService.deleteOrder(
                                       item.id, widget.token!);
@@ -296,7 +297,7 @@ class CartPageState extends State<CartPage> {
                       );
                     },
                   ),
-              ),
+                ),
       bottomNavigationBar: items.isEmpty || selectedOrderIds.isEmpty
           ? null
           : Container(
@@ -341,9 +342,31 @@ class CartPageState extends State<CartPage> {
                     height: 45,
                     child: ElevatedButton(
                       onPressed: () async {
-                        setState(() => isLoading = true);
-                        await _checkout();
-                        setState(() => isLoading = false);
+                        //confirmation dialog before checkout
+                        await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Confirm Checkout'),
+                            content: const Text(
+                                'Are you sure you want to checkout?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(false),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () async {
+                                  setState(() => isLoading = true);
+                                  await _checkout();
+                                  setState(() => isLoading = false);
+                                  Navigator.of(context).pop(true);
+                                },
+                                child: const Text('Checkout'),
+                              ),
+                            ],
+                          ),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,

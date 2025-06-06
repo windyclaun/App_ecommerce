@@ -39,7 +39,7 @@ class _MainProductPageState extends State<MainProductPage> {
   String wibTimeZone = 'WIB';
   String witaTimeZone = 'WITA';
   String witTimeZone = 'WIT';
-  late Timer _timer; // Declare the timer
+  late Timer timer; // Declare the timer
 
   @override
   void initState() {
@@ -47,7 +47,7 @@ class _MainProductPageState extends State<MainProductPage> {
     products = ProductService.getAllProducts();
     _updateTime();
 
-    _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
+    timer = Timer.periodic(const Duration(minutes: 1), (timer) {
       _updateTime(); // Update time every minute
     });
 
