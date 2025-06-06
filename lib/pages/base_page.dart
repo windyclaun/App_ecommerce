@@ -67,13 +67,14 @@ class _BasePageState extends State<BasePage> {
 
     if (widget.token != null) {
       pages.addAll([
-        CartPage(
-          key: _cartKey,
-          token: widget.token,
-          onCheckoutDone: _onCheckoutSuccess,
-        ),
-        if (widget.role == 'admin')
-          AddProductPage(token: widget.token, onProductAdded: _onProductAdded),
+        (widget.role == 'admin')
+            ? AddProductPage(
+                token: widget.token, onProductAdded: _onProductAdded)
+            : CartPage(
+                key: _cartKey,
+                token: widget.token,
+                onCheckoutDone: _onCheckoutSuccess,
+              ),
         ProfilePage(
           token: widget.token,
           username: widget.username,
@@ -108,21 +109,9 @@ class _BasePageState extends State<BasePage> {
   Widget build(BuildContext context) {
     final pages = _buildPages();
     final isLoggedIn = widget.token != null;
+    final isAdmin = widget.role == 'admin';
 
     return PopScope(
-      // onWillPop: () async {
-      //   // If user is logged in, prevent back button
-      //   if (isLoggedIn) {
-      //     return false;
-      //   }
-      //   // If not logged in and not on home page, go to home
-      //   if (_selectedIndex != 0) {
-      //     setState(() => _selectedIndex = 0);
-      //     return false;
-      //   }
-      //   // Allow back navigation only for guest users
-      //   return true;
-      // },
       child: Scaffold(
         body: IndexedStack(
           index: _selectedIndex,
@@ -135,15 +124,15 @@ class _BasePageState extends State<BasePage> {
                     icon: Icon(Icons.home),
                     label: 'Home',
                   ),
-                  const BottomNavigationBarItem(
-                    icon: Icon(Icons.shopping_cart),
-                    label: 'Cart',
-                  ),
-                  if (widget.role == 'admin')
-                    const BottomNavigationBarItem(
-                      icon: Icon(Icons.add_circle),
-                      label: 'Add Product',
-                    ),
+                  (isAdmin)
+                      ? const BottomNavigationBarItem(
+                          icon: Icon(Icons.add_circle),
+                          label: 'Add Product',
+                        )
+                      : const BottomNavigationBarItem(
+                          icon: Icon(Icons.shopping_cart),
+                          label: 'Cart',
+                        ),
                   const BottomNavigationBarItem(
                     icon: Icon(Icons.person),
                     label: 'Profile',

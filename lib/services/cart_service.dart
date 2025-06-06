@@ -9,7 +9,7 @@ import 'package:projectakhir_mobile/services/product_service.dart';
 class CartService {
   static const String baseUrl = secretBaseUrl;
 
-  static Future<List<CartItem>> getCartItems(String token) async {
+static Future<List<CartItem>> getCartItems(String token) async {
     print('token di service: $token');
     if (token.isEmpty) {
       throw Exception('Token is empty');
