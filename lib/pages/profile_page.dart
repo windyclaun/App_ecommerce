@@ -29,7 +29,7 @@ class ProfilePageState extends State<ProfilePage> {
   String? username;
   String? password;
   String? email;
-
+  bool isLoading = false;
   bool showUpdateForm = false;
 
   final TextEditingController usernameController = TextEditingController();
@@ -107,7 +107,7 @@ class ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  void _updateProfile() async {
+  Future<void> _updateProfile() async {
     final newUsername = usernameController.text.trim();
     final newEmail = emailController.text.trim();
     final newPassword = passwordController.text.trim();
@@ -258,20 +258,38 @@ class ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        backgroundColor: Colors.green,
+        foregroundColor: Colors.white,
+        centerTitle: true,
+        title: const Text('Profile', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
         actions: [
-          TextButton(
+          IconButton(
+            icon: const Icon(Icons.logout, size: 24, color: Colors.red),
             onPressed: () {
-              AuthController.logout(context);
+              //confirmation dialog before logout
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: const Text('Logout'),
+                    content: const Text('Are you sure you want to logout?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          AuthController.logout(context);
+                        },
+                        child: const Text('Logout', style: TextStyle(color: Colors.red)),
+                      ),
+                    ],
+                  );
+                },
+              );
             },
-            child: const Text(
-              'Logout',
-              style: TextStyle(
-                color: Colors.red,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
           ),
         ],
       ),
@@ -283,41 +301,31 @@ class ProfilePageState extends State<ProfilePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Username: $username',
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Email: $email',
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                        ],
-                      ),
-                      TextButton.icon(
-                        icon: const Icon(Icons.edit),
-                        label: const Text('Edit Profile'),
-                        onPressed: () {
-                          setState(() {
-                            showUpdateForm = !showUpdateForm;
-                            usernameController.text = username ?? '';
-                            emailController.text = email ?? '';
-                            passwordController.text = password ?? '';
-                          });
-                        },
-                      ),
-                    ],
+                  Text(
+                    'Username: $username',
+                    style: const TextStyle(fontSize: 16),
                   ),
-                  if (showUpdateForm) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'Email: $email',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  TextButton.icon(
+                    icon: const Icon(Icons.edit),
+                    label: const Text('Edit Profile'),
+                    onPressed: () {
+                      setState(() {
+                        showUpdateForm = !showUpdateForm;
+                        usernameController.text = username ?? '';
+                        emailController.text = email ?? '';
+                        passwordController.text = password ?? '';
+                      });
+                    },
+                  ),
                     const SizedBox(height: 16),
+
+                  showUpdateForm ?
                     Container(
-                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: Colors.grey[100],
                         borderRadius: BorderRadius.circular(8),
@@ -352,18 +360,31 @@ class ProfilePageState extends State<ProfilePage> {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: _updateProfile,
+                              onPressed: () async {
+                                setState(() {
+                                  isLoading = true;
+                                });
+                                await _updateProfile();
+                                setState(() {
+                                  isLoading = false;
+                                  showUpdateForm = false;
+                                });
+
+                              },
                               style: ElevatedButton.styleFrom(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 12),
                               ),
-                              child: const Text('Save Changes'),
+                              child: isLoading
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.white,
+                                    )
+                                  : const Text('Update Profile'),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                    ) : const SizedBox.shrink(),
                 ],
               ),
             ),

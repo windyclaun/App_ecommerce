@@ -110,7 +110,7 @@ class _BasePageState extends State<BasePage> {
     final pages = _buildPages();
     final isLoggedIn = widget.token != null;
     final isAdmin = widget.role == 'admin';
-
+    print('BasePage: isLoggedIn: $isLoggedIn, isAdmin: $isAdmin');
     return PopScope(
       child: Scaffold(
         body: IndexedStack(

@@ -20,6 +20,7 @@ class _AddProductPageState extends State<AddProductPage> {
   final _descriptionController = TextEditingController();
   String _selectedCategory = 'fashion';
   File? _selectedImage;
+  bool isLoading = false;
 
   final List<String> _categories = [
     'fashion',
@@ -44,7 +45,7 @@ class _AddProductPageState extends State<AddProductPage> {
     }
   }
 
-  void _submitForm() async {
+  Future<void> _submitForm() async {
     if (_formKey.currentState!.validate() && _selectedImage != null) {
       try {
         final success = await ProductService.createProduct({
@@ -58,7 +59,7 @@ class _AddProductPageState extends State<AddProductPage> {
         if (mounted) {
           if (success) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Product added successfully')),
+              const SnackBar( content: Text('Product added successfully'), backgroundColor: Colors.green),
             );
             widget.onProductAdded();
 
@@ -96,6 +97,9 @@ class _AddProductPageState extends State<AddProductPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.green,
+        foregroundColor: Colors.white,
+        centerTitle: true,
         title: const Text('Add Product'),
         automaticallyImplyLeading: false,
       ),
@@ -192,6 +196,11 @@ class _AddProductPageState extends State<AddProductPage> {
               ),
               const SizedBox(height: 16),
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
                 onPressed: _pickImage,
                 child: const Text('Pick Image from Gallery'),
               ),
@@ -202,14 +211,27 @@ class _AddProductPageState extends State<AddProductPage> {
               ],
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: _submitForm,
+                onPressed: () async {
+                  if (!isLoading) {
+                    setState(() {
+                      isLoading = true;
+                    });
+                    await _submitForm();
+                    setState(() {
+                      isLoading = false;
+                    });
+                  }
+                },
                 style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text(
-                  'Add Product',
-                  style: TextStyle(fontSize: 16),
-                ),
+                child: isLoading
+                    ? const CircularProgressIndicator(
+                        color: Colors.white,
+                      )
+                    : const Text('Add Product'),
               ),
             ],
           ),

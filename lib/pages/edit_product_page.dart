@@ -37,7 +37,7 @@ class _EditProductPageState extends State<EditProductPage> {
   final _descriptionController = TextEditingController();
   String _selectedCategory = 'fashion';
   File? _selectedImage;
-
+  bool isLoading = false;
   final List<String> _categories = [
     'fashion',
     'electronics',
@@ -71,7 +71,7 @@ class _EditProductPageState extends State<EditProductPage> {
     }
   }
 
-  void _submitForm() async {
+  Future<void> _submitForm() async {
     if (_formKey.currentState!.validate() &&
         (_selectedImage != null || widget.imageUrl.isNotEmpty)) {
       try {
@@ -90,19 +90,22 @@ class _EditProductPageState extends State<EditProductPage> {
 
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Product updated successfully')),
+            const SnackBar(
+                content: Text('Product updated successfully'),
+                backgroundColor: Colors.green),
           );
           Navigator.pop(context);
         }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update product: $e')),
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
         );
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text("Please select an image or use default image")),
+            content: Text("Please select an image or use default image"),
+            backgroundColor: Colors.red),
       );
     }
   }
@@ -217,8 +220,16 @@ class _EditProductPageState extends State<EditProductPage> {
               const SizedBox(height: 16),
               // Image Picker Button
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
                 onPressed: _pickImage,
-                child: const Text('Pick Image from Gallery'),
+                child: const Text(
+                  'Pick Image from Gallery',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
               ),
               const SizedBox(height: 16),
               // Show image preview if selected
@@ -231,14 +242,27 @@ class _EditProductPageState extends State<EditProductPage> {
               ],
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: _submitForm,
+                onPressed: () async {
+                  if (!isLoading) {
+                    setState(() {
+                      isLoading = true;
+                    });
+                    await _submitForm();
+                    setState(() {
+                      isLoading = false;
+                    });
+                  }
+                },
                 style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text(
-                  'Update Product',
-                  style: TextStyle(fontSize: 16),
-                ),
+                child: isLoading
+                    ? const CircularProgressIndicator(
+                        color: Colors.white,
+                      )
+                    : const Text('Update Product'),
               ),
             ],
           ),

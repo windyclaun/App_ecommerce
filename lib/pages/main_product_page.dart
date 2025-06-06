@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:projectakhir_mobile/models/cart_item_model.dart';
 import 'package:projectakhir_mobile/models/product_model.dart';
 import 'package:projectakhir_mobile/pages/detail_page.dart';
@@ -33,17 +34,34 @@ class _MainProductPageState extends State<MainProductPage> {
   String searchQuery = '';
   String sortBy = '';
   final TextEditingController _searchController = TextEditingController();
+  String wibTimeZone = 'WIB';
+  String witaTimeZone = 'WITA';
+  String witTimeZone = 'WIT';
 
   @override
   void initState() {
     super.initState();
     products = ProductService.getAllProducts();
-    print('Loading products... $products');
-    //loop the products
+    _updateTime();
 
     if (widget.role != null) {
       userRole = widget.role;
     }
+  }
+
+  // Function to update the time based on the selected time zone
+  void _updateTime() {
+    final now = DateTime.now().toUtc(); // Get current time in UTC
+    final DateFormat timeFormat = DateFormat.Hm(); // Format hour:minute
+    final wib = now.add(const Duration(hours: 7)); // WIB is UTC+7
+    final wita = now.add(const Duration(hours: 8)); // WITA is UTC+8
+    final wit = now.add(const Duration(hours: 9)); // WIT is UTC+9
+
+    wibTimeZone = timeFormat.format(wib);
+    witaTimeZone = timeFormat.format(wita);
+    witTimeZone = timeFormat.format(wit);
+
+    setState(() {});
   }
 
   void _applyFilters(List<Product> items) {
@@ -81,12 +99,17 @@ class _MainProductPageState extends State<MainProductPage> {
           products = ProductService.getAllProducts(); // Refresh product list
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Product deleted successfully")),
+          const SnackBar(
+              content: Text("Product deleted successfully"),
+              backgroundColor: Colors.green),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to delete product: $e")),
+        SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2)),
       );
     }
   }
@@ -142,24 +165,29 @@ class _MainProductPageState extends State<MainProductPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Row(
+        backgroundColor: Colors.green,
+        foregroundColor: Colors.white,
+        leading: Image.asset(
+          'assets/images/Logo.png',
+          height: 60,
+          fit: BoxFit.contain,
+        ),
+        title: Column(
           children: [
-            Image.asset(
-              'assets/images/Logo.png',
-              height: 60,
-              fit: BoxFit.contain,
-            ),
-            if (isLoggedIn) ...[
-              const SizedBox(width: 12),
-              Text(
-                'Welcome, ${widget.username ?? 'User'}',
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
+            Text(
+              isLoggedIn
+                  ? 'Welcome, ${widget.username ?? 'User'}'
+                  : 'Welcome to Our Store',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
-            ],
+            ),
+            Text(
+              '$wibTimeZone (WIB) | $witaTimeZone (WITA) | $witTimeZone (WIT)',
+              style: const TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w500),
+            ),
           ],
         ),
         actions: [
@@ -171,7 +199,12 @@ class _MainProductPageState extends State<MainProductPage> {
                   MaterialPageRoute(builder: (_) => const LoginPage()),
                 );
               },
-              child: const Text("Login", style: TextStyle(color: Colors.black)),
+              child: const Text("Login",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  )),
             ),
         ],
       ),

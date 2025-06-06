@@ -172,10 +172,5 @@ static Future<List<CartItem>> getCartItems(String token) async {
     }
   }
 
-  static Future<void> clearCart(String token) async {
-    final items = await getCartItems(token);
-    for (final item in items) {
-      await deleteOrder(item.id, token);
-    }
-  }
+
 }

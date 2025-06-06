@@ -11,14 +11,12 @@ class AuthController {
     required String username,
     required String password,
     required void Function(bool) setLoading,
-    required void Function(String token, String username, String role)
-        onSuccess,
+    required void Function(String token, String username, String role) onSuccess,
   }) async {
     setLoading(true);
     try {
       final response = await UserService.login(username, password);
       final token = response.token;
-      print('Login successful, token: $token');
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('access_token', token);
       await prefs.setString('username', username);
@@ -31,7 +29,7 @@ class AuthController {
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Login failed: $e')));
+      ).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: Colors.red));
     } finally {
       setLoading(false);
     }
@@ -65,7 +63,7 @@ class AuthController {
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Register failed: $e')));
+      ).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: Colors.red));
     } finally {
       setLoading(false);
     }
@@ -78,6 +76,11 @@ class AuthController {
     await prefs.remove('username');
     await prefs.remove('role');
     await prefs.remove('password');
+
+    //snackbar
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Logout successful', style: TextStyle(color: Colors.green, fontSize: 24, fontWeight: FontWeight.bold)), backgroundColor: Colors.white),
+    );
 
     Navigator.pushAndRemoveUntil(
       context,

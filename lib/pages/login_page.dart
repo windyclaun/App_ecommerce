@@ -166,9 +166,15 @@ class _LoginPageState extends State<LoginPage> {
                               context: context,
                               username: usernameController.text,
                               password: passwordController.text,
-                              setLoading: (value) =>
-                                  setState(() => isLoading = value),
+                              setLoading: (value) => setState(() => isLoading = value),
                               onSuccess: (token, username, role) {
+                                //snackbar 
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content:  Text("Login successful!"),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
