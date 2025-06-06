@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:projectakhir_mobile/models/cart_item_model.dart';
 import 'package:projectakhir_mobile/models/product_model.dart';
 import 'package:projectakhir_mobile/services/cart_service.dart';
+import 'package:projectakhir_mobile/services/notification_service.dart';
 import 'package:projectakhir_mobile/services/product_service.dart';
 
 class CartPage extends StatefulWidget {
@@ -87,60 +88,69 @@ class CartPageState extends State<CartPage> {
   }
 
   Future<void> _checkout() async {
-    try {
-      final selectedIds = selectedOrderIds.toList();
+  try {
+    final selectedIds = selectedOrderIds.toList();
+    final List<String> productNames = items
+        .where((item) => selectedIds.contains(item.id))
+        .map((item) => item.productName)
+        .toList();
+  
+    if (selectedIds.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Please select items to checkout'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2)),
+      );
+      return;
+    }
 
-      if (selectedIds.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Please select items to checkout'),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 2)),
-        );
-        return;
-      }
+    // Cek apakah stok cukup untuk setiap item yang dipilih
+    for (int id in selectedIds) {
+      final item = items.firstWhere((element) => element.id == id);
+      final product = await ProductService.getProductById(item.productId);
 
-      // Cek apakah stok cukup untuk setiap item yang dipilih
-      for (int id in selectedIds) {
-        final item = items.firstWhere((element) => element.id == id);
-        final product = await ProductService.getProductById(item.productId);
-
-        // Jika jumlah item yang ingin di-checkout lebih besar dari stok
-        if (item.quantity > product.stock) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text('Insufficient stock for ${item.productName}'),
-                backgroundColor: Colors.red,
-                duration: const Duration(seconds: 2)),
-          );
-          return; // Hentikan checkout jika ada produk dengan stok kurang
-        }
-      }
-
-      // Jika semua produk memiliki stok cukup, lanjutkan checkout
-      await CartService.checkoutOrders(selectedIds, widget.token!);
-      await loadCart();
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Checkout successful!'),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 2)),
-        );
-        widget.onCheckoutDone?.call();
-      }
-    } catch (e) {
-      if (mounted) {
+      // Jika jumlah item yang ingin di-checkout lebih besar dari stok
+      if (item.quantity > product.stock) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(e.toString()),
+              content: Text('Insufficient stock for ${item.productName}'),
               backgroundColor: Colors.red,
               duration: const Duration(seconds: 2)),
         );
+        return; // Hentikan checkout jika ada produk dengan stok kurang
       }
     }
+
+    // Jika semua produk memiliki stok cukup, lanjutkan checkout
+    await CartService.checkoutOrders(selectedIds, widget.token!);
+    await loadCart();
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Checkout successful!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2)),
+      );
+
+      // Tampilkan notifikasi lokal setelah checkout berhasil
+      NotificationService.showCheckoutSuccessNotification(productNames);
+
+      widget.onCheckoutDone?.call();
+    }
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2)),
+      );
+    }
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

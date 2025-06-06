@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:projectakhir_mobile/services/notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projectakhir_mobile/pages/base_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+    if (await Permission.notification.isDenied) {
+    await Permission.notification.request();
+}
+  await NotificationService.init();
+
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('access_token');
   final username = prefs.getString('username');

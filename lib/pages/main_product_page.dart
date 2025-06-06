@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:projectakhir_mobile/models/cart_item_model.dart';
@@ -37,12 +39,17 @@ class _MainProductPageState extends State<MainProductPage> {
   String wibTimeZone = 'WIB';
   String witaTimeZone = 'WITA';
   String witTimeZone = 'WIT';
+  late Timer _timer; // Declare the timer
 
   @override
   void initState() {
     super.initState();
     products = ProductService.getAllProducts();
     _updateTime();
+
+    _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      _updateTime(); // Update time every minute
+    });
 
     if (widget.role != null) {
       userRole = widget.role;
@@ -57,11 +64,11 @@ class _MainProductPageState extends State<MainProductPage> {
     final wita = now.add(const Duration(hours: 8)); // WITA is UTC+8
     final wit = now.add(const Duration(hours: 9)); // WIT is UTC+9
 
-    wibTimeZone = timeFormat.format(wib);
-    witaTimeZone = timeFormat.format(wita);
-    witTimeZone = timeFormat.format(wit);
-
-    setState(() {});
+    setState(() {
+      wibTimeZone = timeFormat.format(wib);
+      witaTimeZone = timeFormat.format(wita);
+      witTimeZone = timeFormat.format(wit);
+    });
   }
 
   void _applyFilters(List<Product> items) {
@@ -186,7 +193,10 @@ class _MainProductPageState extends State<MainProductPage> {
             ),
             Text(
               '$wibTimeZone (WIB) | $witaTimeZone (WITA) | $witTimeZone (WIT)',
-              style: const TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w500),
+              style: const TextStyle(
+                  fontSize: 13,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500),
             ),
           ],
         ),
