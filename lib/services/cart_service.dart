@@ -131,8 +131,7 @@ static Future<List<CartItem>> getCartItems(String token) async {
   static Future<void> checkoutOrders(List<int> orderIds, String token) async {
     try {
       final items = await getCartItems(token);
-      final checkoutItems =
-          items.where((item) => orderIds.contains(item.id)).toList();
+      final checkoutItems = items.where((item) => orderIds.contains(item.id)).toList();
 
       if (checkoutItems.isEmpty) {
         throw 'No items found for checkout';

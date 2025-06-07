@@ -1,25 +1,58 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:projectakhir_mobile/controllers/location_controller.dart';
 import 'package:projectakhir_mobile/services/notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projectakhir_mobile/pages/base_page.dart';
 
+// Meminta izin lokasi secara runtime
+Future<void> _requestLocationPermission() async {
+  PermissionStatus status = await Permission.location.request();
+  if (status.isGranted) {
+    print('Location permission granted');
+  } else if (status.isDenied) {
+    print('Location permission denied');
+    openAppSettings(); 
+  } else if (status.isPermanentlyDenied) {
+    print('Location permission permanently denied');
+    openAppSettings(); 
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-    if (await Permission.notification.isDenied) {
+  
+  // Meminta izin notifikasi
+  if (await Permission.notification.isDenied) {
     await Permission.notification.request();
-}
+  }
+  
+  // Meminta izin lokasi jika belum diberikan
+  if (await Permission.location.isDenied) {
+    await _requestLocationPermission();
+  }
+  
+  // Inisialisasi layanan notifikasi
   await NotificationService.init();
+  Get.put(LocationController());
 
+
+  // Mengambil data token, username, password, dan role dari SharedPreferences
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('access_token');
   final username = prefs.getString('username');
   final password = prefs.getString('password');
   final role = prefs.getString('role');
-  print('Token  darri main: $token');
-  print('Username  darri main: $username');
-  print('Password  darri main: $password');
-  print('Role darri main: $role');
+  
+  log('Token dari main: $token');
+  log('Username dari main: $username');
+  log('Password dari main: $password');
+  log('Role dari main: $role');
+
+  // Menjalankan aplikasi dengan parameter yang diambil
   runApp(MyApp(token: token, username: username, password: password, role: role));
 }
 
@@ -41,10 +74,10 @@ class MyApp extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
       home: BasePage(
-        token: token,
-        username: username,
-        password: password,
-        role:role
+        token: token, 
+        username: username, 
+        password: password, 
+        role: role
       ),
     );
   }

@@ -77,14 +77,14 @@ class ProfilePageState extends State<ProfilePage> {
       await _loadOrderHistory();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Order deleted successfully')),
+          const SnackBar(content: Text('Order deleted successfully'), backgroundColor: Colors.green),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Failed to delete order: $e')));
+        ).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: Colors.red));
       }
     }
   }
@@ -95,14 +95,14 @@ class ProfilePageState extends State<ProfilePage> {
       await _loadOrderHistory();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('All orders cleared successfully')),
+          const SnackBar(content: Text('All orders cleared successfully'), backgroundColor: Colors.green),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Failed to clear orders: $e')));
+        ).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: Colors.red));
       }
     }
   }
@@ -114,7 +114,7 @@ class ProfilePageState extends State<ProfilePage> {
 
     if (newUsername.isEmpty || newEmail.isEmpty || newPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("All fields are required.")),
+        const SnackBar(content: Text("All fields are required."), backgroundColor: Colors.red),
       );
       return;
     }
@@ -122,7 +122,7 @@ class ProfilePageState extends State<ProfilePage> {
     final userId = decodedToken?['id'];
     if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invalid token or user ID.")),
+        const SnackBar(content: Text("Invalid token or user ID."), backgroundColor: Colors.red)
       );
       return;
     }
@@ -147,19 +147,19 @@ class ProfilePageState extends State<ProfilePage> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Profile updated successfully.")),
+          const SnackBar(content: Text("Profile updated successfully."), backgroundColor: Colors.green),
         );
       } else {
         final body = jsonDecode(response.body);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(
-                  "Update failed: ${body['message'] ?? response.statusCode}")),
+                  "Update failed: ${body['message'] ?? response.statusCode}"), backgroundColor: Colors.red),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
+        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
       );
     }
   }
@@ -243,7 +243,34 @@ class ProfilePageState extends State<ProfilePage> {
                   ),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => _deleteOrder(order.id),
+                    onPressed: (){
+                      //confirmation dialog before deleting order
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Delete Order'),
+                            content: const Text('Are you sure you want to delete this order?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  _deleteOrder(order.id);
+                                },
+                                child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                              ),
+                            ],
+                          );
+                        },
+                      ).then((value) {
+                        // Refresh the order history after deletion
+                        refreshOrderHistory();
+                      });
+                    }
                   ),
                 ),
               );
