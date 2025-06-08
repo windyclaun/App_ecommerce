@@ -42,131 +42,6 @@ class _MainProductPageState extends State<MainProductPage> {
   late Timer timer; // Declare the timer
 
   @override
-  void initState() {
-    super.initState();
-    products = ProductService.getAllProducts();
-    _updateTime();
-
-    timer = Timer.periodic(const Duration(minutes: 1), (timer) {
-      _updateTime(); // Update time every minute
-    });
-
-    if (widget.role != null) {
-      userRole = widget.role;
-    }
-  }
-
-  // Function to update the time based on the selected time zone
-  void _updateTime() {
-    final now = DateTime.now().toUtc(); // Get current time in UTC
-    final DateFormat timeFormat = DateFormat.Hm(); // Format hour:minute
-    final wib = now.add(const Duration(hours: 7)); // WIB is UTC+7
-    final wita = now.add(const Duration(hours: 8)); // WITA is UTC+8
-    final wit = now.add(const Duration(hours: 9)); // WIT is UTC+9
-
-    setState(() {
-      wibTimeZone = timeFormat.format(wib);
-      witaTimeZone = timeFormat.format(wita);
-      witTimeZone = timeFormat.format(wit);
-    });
-  }
-
-  void _applyFilters(List<Product> items) {
-    if (searchQuery.isNotEmpty) {
-      items.retainWhere(
-        (product) =>
-            product.name.toLowerCase().contains(searchQuery.toLowerCase()),
-      );
-    }
-
-    if (selectedCategory != null && selectedCategory!.isNotEmpty) {
-      items.retainWhere((product) => product.category == selectedCategory);
-    }
-
-    switch (sortBy) {
-      case 'price_asc':
-        items.sort(
-          (a, b) => double.parse(a.price).compareTo(double.parse(b.price)),
-        );
-        break;
-      case 'price_desc':
-        items.sort(
-          (a, b) => double.parse(b.price).compareTo(double.parse(a.price)),
-        );
-        break;
-    }
-  }
-
-  void deleteProduct(int productId) async {
-    try {
-      bool success =
-          await ProductService.deleteProduct(productId, widget.token!);
-      if (success) {
-        setState(() {
-          products = ProductService.getAllProducts(); // Refresh product list
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text("Product deleted successfully"),
-              backgroundColor: Colors.green),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 2)),
-      );
-    }
-  }
-
-  void addToCart(Product product) async {
-    if (widget.token == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please login to add to cart"),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    try {
-      final cartItem = CartItem(
-        id: DateTime.now().millisecondsSinceEpoch,
-        productId: product.id,
-        productName: product.name,
-        imageUrl: product.imageUrl,
-        price: double.parse(product.price),
-        quantity: 1, // Always start with quantity 1
-      );
-
-      await CartService.addToCart(cartItem, widget.token!);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Product added to cart"),
-            backgroundColor: Colors.green,
-          ),
-        );
-        widget.onCartUpdated?.call();
-      }
-    } catch (error) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(error.toString()),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     final isLoggedIn = widget.token != null;
 
@@ -493,5 +368,137 @@ class _MainProductPageState extends State<MainProductPage> {
         ],
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    products = ProductService.getAllProducts();
+    _updateTime();
+
+    timer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      _updateTime(); // Update time every minute
+    });
+
+    if (widget.role != null) {
+      userRole = widget.role;
+    }
+  }
+
+  @override
+  void dispose() {
+    timer.cancel(); // Stop the timer to prevent setState after dispose
+    _searchController.dispose(); // Jangan lupa dispose controller juga
+    super.dispose();
+  }
+
+  // Function to update the time based on the selected time zone
+  void _updateTime() {
+    final now = DateTime.now().toUtc(); // Get current time in UTC
+    final DateFormat timeFormat = DateFormat.Hm(); // Format hour:minute
+    final wib = now.add(const Duration(hours: 7)); // WIB is UTC+7
+    final wita = now.add(const Duration(hours: 8)); // WITA is UTC+8
+    final wit = now.add(const Duration(hours: 9)); // WIT is UTC+9
+
+    setState(() {
+      wibTimeZone = timeFormat.format(wib);
+      witaTimeZone = timeFormat.format(wita);
+      witTimeZone = timeFormat.format(wit);
+    });
+  }
+
+  void _applyFilters(List<Product> items) {
+    if (searchQuery.isNotEmpty) {
+      items.retainWhere(
+        (product) =>
+            product.name.toLowerCase().contains(searchQuery.toLowerCase()),
+      );
+    }
+
+    if (selectedCategory != null && selectedCategory!.isNotEmpty) {
+      items.retainWhere((product) => product.category == selectedCategory);
+    }
+
+    switch (sortBy) {
+      case 'price_asc':
+        items.sort(
+          (a, b) => double.parse(a.price).compareTo(double.parse(b.price)),
+        );
+        break;
+      case 'price_desc':
+        items.sort(
+          (a, b) => double.parse(b.price).compareTo(double.parse(a.price)),
+        );
+        break;
+    }
+  }
+
+  void deleteProduct(int productId) async {
+    try {
+      bool success =
+          await ProductService.deleteProduct(productId, widget.token!);
+      if (success) {
+        setState(() {
+          products = ProductService.getAllProducts(); // Refresh product list
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text("Product deleted successfully"),
+              backgroundColor: Colors.green),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2)),
+      );
+    }
+  }
+
+  void addToCart(Product product) async {
+    if (widget.token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please login to add to cart"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final cartItem = CartItem(
+        id: DateTime.now().millisecondsSinceEpoch,
+        productId: product.id,
+        productName: product.name,
+        imageUrl: product.imageUrl,
+        price: double.parse(product.price),
+        quantity: 1, // Always start with quantity 1
+      );
+
+      await CartService.addToCart(cartItem, widget.token!);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Product added to cart"),
+            backgroundColor: Colors.green,
+          ),
+        );
+        widget.onCartUpdated?.call();
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error.toString()),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 }

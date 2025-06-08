@@ -9,6 +9,7 @@ import 'package:http_parser/http_parser.dart';
 class ProductService {
   static const String baseUrl = secretBaseUrl;
 
+
   static Future<List<Product>> getAllProducts() async {
     final response = await http.get(Uri.parse('$baseUrl/api/products/'));
     if (response.statusCode == 200) {

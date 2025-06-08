@@ -374,7 +374,7 @@ class CartPageState extends State<CartPage> {
         NotificationService.showCheckoutSuccessNotification(productNames);
 
         setState(() => isLoading = false); // Stop loading sebelum pop
-        await Future.delayed(const Duration(milliseconds: 400));
+        // await Future.delayed(const Duration(milliseconds: 400));
         Navigator.pop(context);
         widget.onCheckoutDone?.call();
       }
