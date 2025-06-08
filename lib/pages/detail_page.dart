@@ -96,7 +96,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         centerTitle: true,
-        title: const Text('Product Details', style:  TextStyle(fontSize: 24, fontWeight: FontWeight.bold) ),
+        title: const Text('Product Details',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
       ),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(16),
@@ -138,6 +139,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           widget.product.imageUrl,
                           fit: BoxFit.cover,
                           width: double.infinity,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Center(
+                              child: Text(
+                                'Image not available',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       )
                     : const Center(child: FlutterLogo(size: 100)),

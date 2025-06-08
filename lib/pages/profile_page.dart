@@ -77,14 +77,17 @@ class ProfilePageState extends State<ProfilePage> {
       await _loadOrderHistory();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Order deleted successfully'), backgroundColor: Colors.green),
+          const SnackBar(
+              content: Text('Order deleted successfully'),
+              backgroundColor: Colors.green),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: Colors.red));
+        ).showSnackBar(
+            SnackBar(content: Text(e.toString()), backgroundColor: Colors.red));
       }
     }
   }
@@ -95,14 +98,17 @@ class ProfilePageState extends State<ProfilePage> {
       await _loadOrderHistory();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('All orders cleared successfully'), backgroundColor: Colors.green),
+          const SnackBar(
+              content: Text('All orders cleared successfully'),
+              backgroundColor: Colors.green),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: Colors.red));
+        ).showSnackBar(
+            SnackBar(content: Text(e.toString()), backgroundColor: Colors.red));
       }
     }
   }
@@ -114,16 +120,18 @@ class ProfilePageState extends State<ProfilePage> {
 
     if (newUsername.isEmpty || newEmail.isEmpty || newPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("All fields are required."), backgroundColor: Colors.red),
+        const SnackBar(
+            content: Text("All fields are required."),
+            backgroundColor: Colors.red),
       );
       return;
     }
 
     final userId = decodedToken?['id'];
     if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invalid token or user ID."), backgroundColor: Colors.red)
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Invalid token or user ID."),
+          backgroundColor: Colors.red));
       return;
     }
 
@@ -147,14 +155,17 @@ class ProfilePageState extends State<ProfilePage> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Profile updated successfully."), backgroundColor: Colors.green),
+          const SnackBar(
+              content: Text("Profile updated successfully."),
+              backgroundColor: Colors.green),
         );
       } else {
         final body = jsonDecode(response.body);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(
-                  "Update failed: ${body['message'] ?? response.statusCode}"), backgroundColor: Colors.red),
+                  "Update failed: ${body['message'] ?? response.statusCode}"),
+              backgroundColor: Colors.red),
         );
       }
     } catch (e) {
@@ -217,9 +228,18 @@ class ProfilePageState extends State<ProfilePage> {
                     width: 60,
                     height: 60,
                     child: Image.network(
-                      order.imageUrl.isNotEmpty
-                          ? order.imageUrl
-                          : 'https://th.bing.com/th/id/OIP.FPIFJ6xedtnTAxk0T7AKhwHaF9?rs=1&pid=ImgDetMain',
+                      order.imageUrl,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Text(
+                            'Image not available',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontSize: 12,
+                            ),
+                          ),
+                        );
+                      },
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -242,35 +262,36 @@ class ProfilePageState extends State<ProfilePage> {
                     ],
                   ),
                   trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: (){
-                      //confirmation dialog before deleting order
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: const Text('Delete Order'),
-                            content: const Text('Are you sure you want to delete this order?'),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text('Cancel'),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                  _deleteOrder(order.id);
-                                },
-                                child: const Text('Delete', style: TextStyle(color: Colors.red)),
-                              ),
-                            ],
-                          );
-                        },
-                      ).then((value) {
-                        refreshOrderHistory();
-                      });
-                    }
-                  ),
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () {
+                        //confirmation dialog before deleting order
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text('Delete Order'),
+                              content: const Text(
+                                  'Are you sure you want to delete this order?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    _deleteOrder(order.id);
+                                  },
+                                  child: const Text('Delete',
+                                      style: TextStyle(color: Colors.red)),
+                                ),
+                              ],
+                            );
+                          },
+                        ).then((value) {
+                          refreshOrderHistory();
+                        });
+                      }),
                 ),
               );
             },
@@ -287,7 +308,8 @@ class ProfilePageState extends State<ProfilePage> {
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         centerTitle: true,
-        title: const Text('Profile', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        title: const Text('Profile',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, size: 24, color: Colors.red),
@@ -309,7 +331,8 @@ class ProfilePageState extends State<ProfilePage> {
                           Navigator.of(context).pop();
                           AuthController.logout(context);
                         },
-                        child: const Text('Logout', style: TextStyle(color: Colors.red)),
+                        child: const Text('Logout',
+                            style: TextStyle(color: Colors.red)),
                       ),
                     ],
                   );
@@ -348,69 +371,68 @@ class ProfilePageState extends State<ProfilePage> {
                       });
                     },
                   ),
-                    const SizedBox(height: 16),
-
-                  showUpdateForm ?
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Column(
-                        children: [
-                          TextField(
-                            controller: usernameController,
-                            decoration: const InputDecoration(
-                              labelText: 'Username',
-                              border: OutlineInputBorder(),
-                            ),
+                  const SizedBox(height: 16),
+                  showUpdateForm
+                      ? Container(
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          const SizedBox(height: 8),
-                          TextField(
-                            controller: emailController,
-                            decoration: const InputDecoration(
-                              labelText: 'Email',
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          TextField(
-                            controller: passwordController,
-                            obscureText: true,
-                            decoration: const InputDecoration(
-                              labelText: 'Password',
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () async {
-                                setState(() {
-                                  isLoading = true;
-                                });
-                                await _updateProfile();
-                                setState(() {
-                                  isLoading = false;
-                                  showUpdateForm = false;
-                                });
-
-                              },
-                              style: ElevatedButton.styleFrom(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 12),
+                          child: Column(
+                            children: [
+                              TextField(
+                                controller: usernameController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Username',
+                                  border: OutlineInputBorder(),
+                                ),
                               ),
-                              child: isLoading
-                                  ? const CircularProgressIndicator(
-                                      color: Colors.white,
-                                    )
-                                  : const Text('Update Profile'),
-                            ),
+                              const SizedBox(height: 8),
+                              TextField(
+                                controller: emailController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Email',
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              TextField(
+                                controller: passwordController,
+                                obscureText: true,
+                                decoration: const InputDecoration(
+                                  labelText: 'Password',
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: () async {
+                                    setState(() {
+                                      isLoading = true;
+                                    });
+                                    await _updateProfile();
+                                    setState(() {
+                                      isLoading = false;
+                                      showUpdateForm = false;
+                                    });
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12),
+                                  ),
+                                  child: isLoading
+                                      ? const CircularProgressIndicator(
+                                          color: Colors.white,
+                                        )
+                                      : const Text('Update Profile'),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ) : const SizedBox.shrink(),
+                        )
+                      : const SizedBox.shrink(),
                 ],
               ),
             ),
@@ -425,7 +447,33 @@ class ProfilePageState extends State<ProfilePage> {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 TextButton(
-                  onPressed: _clearAllOrders,
+                  onPressed: () {
+                    //confirmation dialog before clearing all orders
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text('Clear All Orders'),
+                          content: const Text(
+                              'Are you sure you want to clear all orders?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                _clearAllOrders();
+                              },
+                              child: const Text('Clear All',
+                                  style: TextStyle(color: Colors.red)),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
                   child: const Text(
                     'Clear All',
                     style: TextStyle(color: Colors.red),

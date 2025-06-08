@@ -95,10 +95,19 @@ class CartPageState extends State<CartPage> {
                                   width: 80,
                                   height: 80,
                                   child: Image.network(
-                                    item.imageUrl.isNotEmpty
-                                        ? item.imageUrl
-                                        : 'https://th.bing.com/th/id/OIP.FPIFJ6xedtnTAxk0T7AKhwHaF9?rs=1&pid=ImgDetMain',
+                                    item.imageUrl,
                                     fit: BoxFit.cover,
+                                     errorBuilder: (context, error, stackTrace) {
+                                      return const Center(
+                                        child: Text(
+                                          'Image not available',
+                                          style: TextStyle(
+                                            color: Colors.red,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ),
                                 const SizedBox(width: 16),

@@ -9,7 +9,6 @@ import 'package:http_parser/http_parser.dart';
 class ProductService {
   static const String baseUrl = secretBaseUrl;
 
-
   static Future<List<Product>> getAllProducts() async {
     final response = await http.get(Uri.parse('$baseUrl/api/products/'));
     if (response.statusCode == 200) {
@@ -49,6 +48,8 @@ class ProductService {
       request.fields['category'] = productData['category']!;
 
       String mimeType = lookupMimeType(imageFile.path) ?? 'image/jpeg';
+      print("Image path CREATE: ${imageFile.path}");
+      print("Mime type CREATE: $mimeType");
       request.files.add(
         await http.MultipartFile.fromPath(
           'image',
@@ -98,8 +99,9 @@ class ProductService {
             contentType: MediaType.parse(mimeType),
           ),
         );
+        print("Image path UPDATE: ${imageFile.path}");
+        print("Mime type UPDATE: $mimeType");
       }
-
       final response = await request.send();
 
       if (response.statusCode == 200) {

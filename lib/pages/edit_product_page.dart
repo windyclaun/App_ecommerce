@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+// import 'package:image_picker/image_picker.dart';
 import 'package:projectakhir_mobile/services/product_service.dart';
 
 class EditProductPage extends StatefulWidget {
@@ -48,7 +48,7 @@ class _EditProductPageState extends State<EditProductPage> {
     'children'
   ];
 
-  final ImagePicker _picker = ImagePicker();
+  // final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -60,16 +60,16 @@ class _EditProductPageState extends State<EditProductPage> {
     _selectedCategory = widget.category;
   }
 
-  Future<void> _pickImage() async {
-    final XFile? pickedFile =
-        await _picker.pickImage(source: ImageSource.gallery);
+  // Future<void> _pickImage() async {
+  //   final XFile? pickedFile =
+  //       await _picker.pickImage(source: ImageSource.gallery);
 
-    if (pickedFile != null) {
-      setState(() {
-        _selectedImage = File(pickedFile.path);
-      });
-    }
-  }
+  //   if (pickedFile != null) {
+  //     setState(() {
+  //       _selectedImage = File(pickedFile.path);
+  //     });
+  //   }
+  // }
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate() &&
@@ -219,25 +219,40 @@ class _EditProductPageState extends State<EditProductPage> {
               ),
               const SizedBox(height: 16),
               // Image Picker Button
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                onPressed: _pickImage,
-                child: const Text(
-                  'Pick Image from Gallery',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
+              // ElevatedButton(
+              //   style: ElevatedButton.styleFrom(
+              //     backgroundColor: Colors.green,
+              //     foregroundColor: Colors.white,
+              //     padding: const EdgeInsets.symmetric(vertical: 16),
+              //   ),
+              //   onPressed: _pickImage,
+              //   child: const Text(
+              //     'Pick Image from Gallery',
+              //     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              //   ),
+              // ),
               const SizedBox(height: 16),
               // Show image preview if selected
               if (_selectedImage != null) ...[
                 Image.file(_selectedImage!),
                 const SizedBox(height: 16),
               ] else if (widget.imageUrl.isNotEmpty) ...[
-                Image.network(widget.imageUrl),
+                Image.network(
+                  widget.imageUrl,
+                  height: 200,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Center(
+                      child: Text(
+                        'Image not available',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 12,
+                        ),
+                      ),
+                    );
+                  },
+                ),
                 const SizedBox(height: 16),
               ],
               const SizedBox(height: 24),

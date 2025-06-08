@@ -114,47 +114,47 @@ class OrderService {
     }
   }
 
-  static Future<List<Order>> getOrdersByUserId(int userId, String token) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/orders/user/$userId'),
-      headers: {'Authorization': 'Bearer $token'},
-    );
+  // static Future<List<Order>> getOrdersByUserId(int userId, String token) async {
+  //   final response = await http.get(
+  //     Uri.parse('$baseUrl/orders/user/$userId'),
+  //     headers: {'Authorization': 'Bearer $token'},
+  //   );
 
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      return data.map((json) => Order.fromJson(json)).toList();
-    } else {
-      throw Exception('Failed to load user orders');
-    }
-  }
+  //   if (response.statusCode == 200) {
+  //     final List<dynamic> data = json.decode(response.body);
+  //     return data.map((json) => Order.fromJson(json)).toList();
+  //   } else {
+  //     throw Exception('Failed to load user orders');
+  //   }
+  // }
 
-  static Future<List<Order>> getCheckedOutOrdersByUserId(
-    int userId,
-    String token,
-  ) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/orders/user/$userId/checkedout'),
-      headers: {'Authorization': 'Bearer $token'},
-    );
+  // static Future<List<Order>> getCheckedOutOrdersByUserId(
+  //   int userId,
+  //   String token,
+  // ) async {
+  //   final response = await http.get(
+  //     Uri.parse('$baseUrl/orders/user/$userId/checkedout'),
+  //     headers: {'Authorization': 'Bearer $token'},
+  //   );
 
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      return data.map((json) => Order.fromJson(json)).toList();
-    } else {
-      throw Exception('Failed to load checked out orders');
-    }
-  }
+  //   if (response.statusCode == 200) {
+  //     final List<dynamic> data = json.decode(response.body);
+  //     return data.map((json) => Order.fromJson(json)).toList();
+  //   } else {
+  //     throw Exception('Failed to load checked out orders');
+  //   }
+  // }
 
-  static Future<void> checkoutAllOrders(String token) async {
-    final response = await http.put(
-      Uri.parse('$baseUrl/orders/checkout'),
-      headers: {'Authorization': 'Bearer $token'},
-    );
+  // static Future<void> checkoutAllOrders(String token) async {
+  //   final response = await http.put(
+  //     Uri.parse('$baseUrl/orders/checkout'),
+  //     headers: {'Authorization': 'Bearer $token'},
+  //   );
 
-    if (response.statusCode != 200) {
-      throw Exception('Failed to checkout orders');
-    }
-  }
+  //   if (response.statusCode != 200) {
+  //     throw Exception('Failed to checkout orders');
+  //   }
+  // }
 
   static Future<void> checkoutOrderById(int id, String token) async {
     final response = await http.put(
@@ -194,6 +194,39 @@ class OrderService {
       return [];
     }
   }
+
+//   static Future<List<OrderHistory>> getOrderHistory(String token) async {
+//   try {
+//     // Decode user ID dari token
+//     final userId = JwtDecoder.decode(token)['id'];
+
+//     // Panggil endpoint yang udah kamu sediain
+//     final response = await http.get(
+//       Uri.parse('$baseUrl/api/orders/user/$userId/checkedout'),
+//       headers: {'Authorization': 'Bearer $token'},
+//     );
+
+//     if (response.statusCode == 200) {
+//       final List<dynamic> data = json.decode(response.body);
+//       return data.map((item) => OrderHistory(
+//         id: item['id'],
+//         productId: item['product_id'],
+//         productName: item['product_name'],
+//         imageUrl: item['image_url'] ?? '',
+//         quantity: item['quantity'],
+//         totalPrice: double.parse(item['total_price'].toString()),
+//         status: item['status'],
+//         createdAt: DateTime.parse(item['created_at']),
+//       )).toList();
+//     } else {
+//       throw Exception('Failed to fetch order history');
+//     }
+//   } catch (e) {
+//     print('Error getting order history: $e');
+//     return [];
+//   }
+// }
+
 
   static Future<void> clearAllOrders(String token) async {
     try {

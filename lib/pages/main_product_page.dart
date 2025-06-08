@@ -262,6 +262,17 @@ class _MainProductPageState extends State<MainProductPage> {
                                   ),
                                   child: Image.network(
                                     product.imageUrl,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Center(
+                                        child: Text(
+                                          'Image not available',
+                                          style: TextStyle(
+                                            color: Colors.red,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      );
+                                    },
                                     fit: BoxFit.cover,
                                     width: double.infinity,
                                   ),
