@@ -267,7 +267,6 @@ class ProfilePageState extends State<ProfilePage> {
                           );
                         },
                       ).then((value) {
-                        // Refresh the order history after deletion
                         refreshOrderHistory();
                       });
                     }

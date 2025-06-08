@@ -1,26 +1,24 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:projectakhir_mobile/controllers/location_controller.dart';
 import 'package:projectakhir_mobile/services/notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projectakhir_mobile/pages/base_page.dart';
 
 // Meminta izin lokasi secara runtime
-Future<void> _requestLocationPermission() async {
-  PermissionStatus status = await Permission.location.request();
-  if (status.isGranted) {
-    print('Location permission granted');
-  } else if (status.isDenied) {
-    print('Location permission denied');
-    openAppSettings(); 
-  } else if (status.isPermanentlyDenied) {
-    print('Location permission permanently denied');
-    openAppSettings(); 
-  }
-}
+// Future<void> _requestLocationPermission() async {
+//   PermissionStatus status = await Permission.location.request();
+//   if (status.isGranted) {
+//     print('Location permission granted');
+//   } else if (status.isDenied) {
+//     print('Location permission denied');
+//     openAppSettings(); 
+//   } else if (status.isPermanentlyDenied) {
+//     print('Location permission permanently denied');
+//     openAppSettings(); 
+//   }
+// }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,14 +28,8 @@ void main() async {
     await Permission.notification.request();
   }
   
-  // Meminta izin lokasi jika belum diberikan
-  if (await Permission.location.isDenied) {
-    await _requestLocationPermission();
-  }
-  
   // Inisialisasi layanan notifikasi
   await NotificationService.init();
-  Get.put(LocationController());
 
 
   // Mengambil data token, username, password, dan role dari SharedPreferences

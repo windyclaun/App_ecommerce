@@ -25,6 +25,7 @@ class CartPageState extends State<CartPage> {
 
   @override
   Widget build(BuildContext context) {
+    Get.put(LocationController());
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green,
@@ -103,7 +104,8 @@ class CartPageState extends State<CartPage> {
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         item.productName,
@@ -141,7 +143,8 @@ class CartPageState extends State<CartPage> {
                                               ),
                                             );
                                           } else {
-                                            return const Text('No product data');
+                                            return const Text(
+                                                'No product data');
                                           }
                                         },
                                       ),
@@ -165,8 +168,8 @@ class CartPageState extends State<CartPage> {
                                   ],
                                 ),
                                 IconButton(
-                                  icon:
-                                      const Icon(Icons.delete, color: Colors.red),
+                                  icon: const Icon(Icons.delete,
+                                      color: Colors.red),
                                   onPressed: () async {
                                     await CartService.deleteOrder(
                                         item.id, widget.token!);
@@ -233,18 +236,14 @@ class CartPageState extends State<CartPage> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: isLoading
-                          ? const CircularProgressIndicator(
-                              color: Colors.white,
-                            )
-                          : const Text(
-                              'Checkout',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
+                      child: const Text(
+                        'Checkout',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -322,7 +321,7 @@ class CartPageState extends State<CartPage> {
 
   Future<void> _checkout() async {
     try {
-      setState(() => isLoading = true);
+      setState(() => isLoading = true); // Moved here
 
       final selectedIds = selectedOrderIds.toList();
       final List<String> productNames = items
@@ -333,59 +332,63 @@ class CartPageState extends State<CartPage> {
       if (selectedIds.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text('Please select items to checkout'),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 2)),
+            content: Text('Please select items to checkout'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
         );
+        setState(() => isLoading = false);
         return;
       }
 
-      // Cek apakah stok cukup untuk setiap item yang dipilih
+      // Cek stok
       for (int id in selectedIds) {
         final item = items.firstWhere((element) => element.id == id);
         final product = await ProductService.getProductById(item.productId);
 
-        // Jika jumlah item yang ingin di-checkout lebih besar dari stok
         if (item.quantity > product.stock) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-                content: Text('Insufficient stock for ${item.productName}'),
-                backgroundColor: Colors.red,
-                duration: const Duration(seconds: 2)),
+              content: Text('Insufficient stock for ${item.productName}'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 2),
+            ),
           );
+          setState(() => isLoading = false);
           return;
         }
       }
-      // Jika semua produk memiliki stok cukup, lanjutkan checkout
+
       await CartService.checkoutOrders(selectedIds, widget.token!);
       await loadCart();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text('Checkout successful!'),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 2)),
+            content: Text('Checkout successful!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
         );
 
-        // Tampilkan notifikasi lokal setelah checkout berhasil
         NotificationService.showCheckoutSuccessNotification(productNames);
 
+        setState(() => isLoading = false); // Stop loading sebelum pop
+        await Future.delayed(const Duration(milliseconds: 400));
+        Navigator.pop(context);
         widget.onCheckoutDone?.call();
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(e.toString()),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 2)),
+            content: Text(e.toString()),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2),
+          ),
         );
       }
-    } finally {
       setState(() => isLoading = false);
-      // Navigate back to the previous page after checkout
-      Navigator.pop(context);
     }
   }
 
@@ -538,11 +541,10 @@ class CartPageState extends State<CartPage> {
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
-                        onPressed: selectedTotalPrice == 0.0 ? null : _checkout,
+                        onPressed: _checkout,
                         child: isLoading
                             ? const CircularProgressIndicator(
-                                color: Colors.white,
-                              )
+                                color: Colors.white)
                             : const Text(
                                 'Confirm Checkout',
                                 style: TextStyle(
