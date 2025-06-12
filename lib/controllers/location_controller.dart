@@ -1,8 +1,9 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
-import 'package:location/location.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:get/get.dart';
-import 'dart:math';
+import 'package:location/location.dart';
 
 class LocationController extends GetxController {
   var userLatitude = (-7.0).obs; // Observable user latitude
@@ -21,11 +22,10 @@ class LocationController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _getUserLocation(); // Get user's initial location
-    _startCompass(); // Start listening to compass heading
+    _getUserLocation();
+    _startCompass();
   }
 
-  // Mendapatkan lokasi pengguna saat aplikasi dimulai
   Future<void> _getUserLocation() async {
     bool serviceEnabled;
     PermissionStatus permissionGranted;
@@ -36,7 +36,8 @@ class LocationController extends GetxController {
         serviceEnabled = await _location.requestService();
         if (!serviceEnabled) {
           // snackbar error
-          Get.snackbar('Error', 'Location service is disabled', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red);
+          Get.snackbar('Error', 'Location service is disabled',
+              snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red);
           return;
         }
       }
@@ -46,7 +47,8 @@ class LocationController extends GetxController {
         permissionGranted = await _location.requestPermission();
         if (permissionGranted != PermissionStatus.granted) {
           // snackbar error
-          Get.snackbar('Error', 'Location permission is denied', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red);
+          Get.snackbar('Error', 'Location permission is denied',
+              snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red);
           return;
         }
       }
@@ -60,16 +62,15 @@ class LocationController extends GetxController {
         sendLongitude.value = currentLocation.longitude!;
         isLocationLoaded.value = true;
       } else {
-        //snackbar error
-        Get.snackbar('Error', 'Unable to get current location', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red);
+        Get.snackbar('Error', 'Unable to get current location',
+            snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red);
       }
     } catch (e) {
-      // Handle any errors that occur during location retrieval
-      Get.snackbar('Error', 'Failed to get location: $e', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red);
+      Get.snackbar('Error', 'Failed to get location: $e',
+          snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red);
     }
   }
 
-  // Start listening to compass heading
   void _startCompass() {
     FlutterCompass.events?.listen((event) {
       if (event.heading != null) {
@@ -78,7 +79,6 @@ class LocationController extends GetxController {
     });
   }
 
-  // Stop listening to compass when not needed
   void stopCompass() {
     FlutterCompass.events?.listen((event) {}).cancel();
   }
